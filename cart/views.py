@@ -9,13 +9,25 @@ from .forms import CartAddProductForm
 def cart_add(request, product_id):
     cart = Cart(request)
     product = get_object_or_404(Product, id=product_id)
+
+    if not product.available:
+        return redirect('cart_detail')
+
     form = CartAddProductForm(request.POST)
 
     if form.is_valid():
         cd = form.cleaned_data
-        cart.add(product=product, quantity=cd['quantity'], override_quantity=cd['override'])
+        give_discount = len(cart.cart) == 0
+
+        cart.add(
+            product=product,
+            quantity=cd['quantity'],
+            override_quantity=cd['override'],
+            discount=give_discount
+        )
 
     return redirect('cart_detail')
+
 
 
 def cart_remove(request, product_id):
